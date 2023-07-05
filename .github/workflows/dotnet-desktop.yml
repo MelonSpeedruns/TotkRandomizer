@@ -10,9 +10,6 @@ jobs:
   build:
 
     runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: ./randomizer
     steps:
     - uses: actions/checkout@v3
     - name: Setup .NET
@@ -31,5 +28,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: randomizer
-        path: randomizer/latest/**
+        path: ./randomizer/latest/**
         if-no-files-found: error
