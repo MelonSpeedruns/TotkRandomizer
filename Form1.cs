@@ -507,7 +507,7 @@ namespace TotkRandomizer
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            if (Properties.Settings.Default.totkPath != null)
+            if (Properties.Settings.Default.totkPath != null && Properties.Settings.Default.totkPath != String.Empty)
             {
                 textBox1.Text = Properties.Settings.Default.totkPath;
                 button1.Enabled = true;
