@@ -29,5 +29,5 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: TotkRandomizer
-        path: TotkRandomizer/latest/**
+        path: TotkRandomizer/TotkRandomizer/latest/**
         if-no-files-found: error
