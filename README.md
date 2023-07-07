@@ -1,5 +1,7 @@
 # TOTK Randomizer Mod
 
+Just a Randomizer mod I've been working on since TOTK released, following the code and idea of my BOTW one.
+
 ## Table of contents
 
 - [Quick start](#quick-start)
