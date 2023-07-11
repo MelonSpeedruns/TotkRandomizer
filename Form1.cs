@@ -24,6 +24,9 @@ namespace TotkRandomizer
         private int currentProgress = 0;
         private static int maxProgress = 0;
 
+        private int currentChest = 0;
+        private int chestCount = 1531;
+
         private static Dictionary<string, uint> rstbModifiedTable = new Dictionary<string, uint>();
 
         private string randomizerPath;
@@ -38,6 +41,7 @@ namespace TotkRandomizer
 
             backgroundWorker1.RunWorkerAsync();
             button1.Enabled = false;
+            button2.Enabled = false;
         }
 
         private static void CopyFilesRecursively(string sourcePath, string targetPath)
@@ -219,15 +223,15 @@ namespace TotkRandomizer
 
                     if (dynamicArray.ContainsKey("Drop__DropActor"))
                     {
-                        ChestContents.Shuffle();
-                        actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"] = ChestContents[0];
-
-                        if (ChestContents[0].StartsWith("Armor_"))
+                        if (actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"].Equals("KeySmall"))
                         {
-                            ChestContents.RemoveAt(0);
+                            return actor;
                         }
 
-                        if (gyamlValue.StartsWith("Weapon_") && !gyamlValue.Contains("_Bow_"))
+                        actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"] = ChestList.ChestNumberList[currentChest];
+
+                        string newDropActor = actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"].GetString();
+                        if (newDropActor.StartsWith("Weapon_") && !newDropActor.Contains("_Bow_"))
                         {
                             AttachmentList.Shuffle();
 
@@ -239,6 +243,8 @@ namespace TotkRandomizer
                             actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor_Attachment"] = AttachmentList[0];
                         }
                     }
+
+                    currentChest++;
                 }
             }
 
@@ -387,6 +393,11 @@ namespace TotkRandomizer
             string minusFieldLargeDungeonPath = Path.Combine(textBox1.Text, "Banc", "MinusField", "LargeDungeon");
             string smallDungeonPath = Path.Combine(textBox1.Text, "Banc", "SmallDungeon");
 
+            currentChest = 0;
+            ChestList.InitChestNumberList(chestCount);
+
+            RandomizeCutscenes();
+
             string[] mapFiles = new string[] {
                 mainFieldPath,
                 largeDungeonPath,
@@ -409,6 +420,8 @@ namespace TotkRandomizer
                 Directory.CreateDirectory(finalPath);
                 CopyFilesRecursively(mapFilePath, finalPath);
             }
+
+            rstbModifiedTable.Clear();
 
             string resourceFolderPath = Path.Combine(textBox1.Text, "System", "Resource");
             romfsEnd = resourceFolderPath.Replace(textBox1.Text, "").Remove(0, 1);
@@ -455,7 +468,12 @@ namespace TotkRandomizer
 
                 currentProgress++;
                 backgroundWorker1.ReportProgress(currentProgress);
+
+                Console.WriteLine(currentChest);
             }
+
+            //rstbModifiedTable.Add("Event/EventFlow/DefeatGanondorf.110.bfevfl", 200000);
+            //rstbModifiedTable.Add("Event/EventFlow/DefeatGanondorf.bfevfl", 200000);
 
             //RSTB Table
             Restbl rstbFileData = Restbl.FromBinary(HashTable.DecompressFile(File.ReadAllBytes(rstbFile)));
@@ -467,6 +485,20 @@ namespace TotkRandomizer
 
             byte[] compressedRSTB = HashTable.CompressDataOther(rstbFileData.ToBinary().ToArray());
             File.WriteAllBytes(rstbFile, compressedRSTB);
+        }
+
+        private void RandomizeCutscenes()
+        {
+            string customEventFlowFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Events");
+
+            string finalPath = Path.Combine(customEventFlowFolder, "..", "romfs", "Event", "EventFlow");
+            Directory.CreateDirectory(finalPath);
+
+            foreach (string cutsceneFile in Directory.GetFiles(customEventFlowFolder, "*.zs"))
+            {
+                finalPath = Path.Combine(customEventFlowFolder, "..", "romfs", "Event", "EventFlow", Path.GetFileName(cutsceneFile));
+                File.Copy(cutsceneFile, finalPath, true);
+            }
         }
 
         private void ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -483,9 +515,8 @@ namespace TotkRandomizer
 
             Console.WriteLine("Done!");
 
-            rstbModifiedTable.Clear();
-
             button1.Enabled = true;
+            button2.Enabled = true;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -503,6 +534,7 @@ namespace TotkRandomizer
             Properties.Settings.Default.Save();
 
             button1.Enabled = true;
+            button2.Enabled = true;
         }
 
         private void Form1_Load(object sender, EventArgs e)
