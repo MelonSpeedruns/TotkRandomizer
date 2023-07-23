@@ -223,7 +223,8 @@ namespace TotkRandomizer
 
                     if (dynamicArray.ContainsKey("Drop__DropActor"))
                     {
-                        if (actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"].Equals("KeySmall"))
+                        string dropValue = actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"].GetString();
+                        if (dropValue.Equals("KeySmall"))
                         {
                             return actor;
                         }
