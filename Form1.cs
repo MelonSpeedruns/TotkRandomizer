@@ -1,9 +1,9 @@
+using BfevLibrary;
 using Cead;
 using Cead.Interop;
 using CsRestbl;
 using Native.IO.Services;
 using Ookii.Dialogs.WinForms;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Media;
 using TotkRSTB;
@@ -438,6 +438,26 @@ namespace TotkRandomizer
 
             allChestContents.Clear();
 
+            // Create New Event Files
+            string eventfilesPath = Path.Combine(textBox1.Text, "Event", "EventFlow");
+            string[] allEventFiles = Directory.GetFiles(eventfilesPath, "*.bfevfl.zs", SearchOption.AllDirectories);
+            List<string> allEventNames = CreateLatestEventNames(allEventFiles);
+            string eventFlowFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "romfs", "Event", "EventFlow");
+            Directory.CreateDirectory(eventFlowFolder);
+
+            foreach (string eventFile in allEventNames)
+            {
+                string eventName = Path.GetFileNameWithoutExtension(eventFile).Split(".")[0];
+
+                if (eventName == "OpeningEvent")
+                {
+                    string finalEventFlowPath = Path.Combine(eventFlowFolder, Path.GetFileName(eventFile));
+                    File.Copy(eventFile, finalEventFlowPath, true);
+                    byte[] modifiedData = TotkRandomizer.Events.EditOpeningEvent(finalEventFlowPath);
+                    rstbModifiedTable.Add($"Event/EventFlow/{Path.GetFileNameWithoutExtension(eventFile).Replace(".zs", "")}", (uint)modifiedData.Length + 20000);
+                }
+            }
+
             // Get Item Table from Map Files
             foreach (string mapFile in allFiles)
             {
@@ -458,7 +478,6 @@ namespace TotkRandomizer
                         if (chestContents.Count > 0)
                         {
                             allChestContents.Add(chestContents);
-                            Console.WriteLine(chestContents[0]);
                         }
                     }
                 }
@@ -504,9 +523,6 @@ namespace TotkRandomizer
                 Console.WriteLine(currentChest);
             }
 
-            //rstbModifiedTable.Add("Event/EventFlow/DefeatGanondorf.110.bfevfl", 200000);
-            //rstbModifiedTable.Add("Event/EventFlow/DefeatGanondorf.bfevfl", 200000);
-
             //RSTB Table
             Restbl rstbFileData = Restbl.FromBinary(HashTable.DecompressFile(File.ReadAllBytes(rstbFile)));
 
@@ -517,6 +533,48 @@ namespace TotkRandomizer
 
             byte[] compressedRSTB = HashTable.CompressDataOther(rstbFileData.ToBinary().ToArray());
             File.WriteAllBytes(rstbFile, compressedRSTB);
+        }
+
+        private List<string> CreateLatestEventNames(string[] allEventFiles)
+        {
+            List<string> eventNames = new List<string>();
+
+            foreach (string eventFile in allEventFiles)
+            {
+                string eventName = Path.GetFileNameWithoutExtension(eventFile).Split(".")[0];
+
+                if (eventNames.Any(o => Path.GetFileNameWithoutExtension(o).StartsWith(eventName)))
+                {
+                    Dictionary<string, int> sameEvents = new Dictionary<string, int>();
+
+                    foreach (string sameEvent in allEventFiles)
+                    {
+                        if (Path.GetFileNameWithoutExtension(sameEvent).Split(".")[0].StartsWith(eventName))
+                        {
+                            if (Path.GetFileNameWithoutExtension(sameEvent).Split(".").Length > 2)
+                            {
+                                int eventVersion = int.Parse(Path.GetFileNameWithoutExtension(sameEvent).Split(".")[1]);
+                                sameEvents.Add(sameEvent, eventVersion);
+                            }
+                            else
+                            {
+                                sameEvents.Add(sameEvent, 0);
+                            }
+                        }
+                    }
+
+                    Dictionary<string, int> orderedDict = sameEvents.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+
+                    eventNames.RemoveAll(x => Path.GetFileNameWithoutExtension(x).StartsWith(eventName));
+                    eventNames.Add(orderedDict.Keys.Last());
+                }
+                else
+                {
+                    eventNames.Add(eventFile);
+                }
+            }
+
+            return eventNames;
         }
 
         private List<string> GetChestContent(Byml actor)

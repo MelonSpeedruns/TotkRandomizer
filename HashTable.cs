@@ -1,5 +1,6 @@
 ﻿using ZstdSharp;
 using Cead;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TotkRSTB
 {
@@ -31,6 +32,8 @@ namespace TotkRSTB
             _commonDecompressor.LoadDictionary(sarcFiles["pack.zsdic"]);
             _commonCompressor.LoadDictionary(sarcFiles["pack.zsdic"]);
 
+            _commonDecompressorOther.LoadDictionary(sarcFiles["zs.zsdic"]);
+
             _mapDecompressor.LoadDictionary(sarcFiles["bcett.byml.zsdic"]);
             _mapCompressor.LoadDictionary(sarcFiles["bcett.byml.zsdic"]);
         }
@@ -50,6 +53,11 @@ namespace TotkRSTB
         {
             Span<byte> src = file;
             return _commonCompressorOther.Wrap(src).ToArray();
+        }
+
+        public static byte[] DecompressDataOther(byte[] data)
+        {
+            return _commonDecompressorOther.Unwrap(data).ToArray();
         }
 
         public static byte[] CompressData(byte[] file)

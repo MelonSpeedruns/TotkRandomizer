@@ -20,6 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="BfevLibrary">
+      <HintPath>BfevLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="Cead">
       <HintPath>Cead.dll</HintPath>
     </Reference>
@@ -40,6 +43,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="BfevLibrary.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Cead.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
