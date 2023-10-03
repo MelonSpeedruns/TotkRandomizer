@@ -3,6 +3,7 @@ using Cead.Interop;
 using CsRestbl;
 using Native.IO.Services;
 using Ookii.Dialogs.WinForms;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Media;
 using TotkRSTB;
@@ -25,7 +26,8 @@ namespace TotkRandomizer
         private static int maxProgress = 0;
 
         private int currentChest = 0;
-        private int chestCount = 1531;
+
+        private List<List<string>> allChestContents = new List<List<string>>();
 
         private static Dictionary<string, uint> rstbModifiedTable = new Dictionary<string, uint>();
 
@@ -229,7 +231,7 @@ namespace TotkRandomizer
                             return actor;
                         }
 
-                        actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"] = ChestList.ChestNumberList[currentChest];
+                        actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"] = allChestContents[currentChest][0];
 
                         string newDropActor = actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"].GetString();
                         if (newDropActor.StartsWith("Weapon_") && !newDropActor.Contains("_Bow_"))
@@ -395,9 +397,6 @@ namespace TotkRandomizer
             string smallDungeonPath = Path.Combine(textBox1.Text, "Banc", "SmallDungeon");
 
             currentChest = 0;
-            ChestList.InitChestNumberList(chestCount);
-
-            RandomizeCutscenes();
 
             string[] mapFiles = new string[] {
                 mainFieldPath,
@@ -436,6 +435,38 @@ namespace TotkRandomizer
             rstbFile = Directory.GetFiles(rstbFile, "*.rsizetable.zs")[0];
 
             string[] allFiles = Directory.GetFiles(mapfilesPath, "*.bcett.byml.zs", SearchOption.AllDirectories);
+
+            allChestContents.Clear();
+
+            // Get Item Table from Map Files
+            foreach (string mapFile in allFiles)
+            {
+                Span<byte> myByteArray = HashTable.DecompressMapData(File.ReadAllBytes(mapFile));
+                Byml byaml = Byml.FromBinary(myByteArray);
+
+                // For every object in the map, randomize it!
+                Byml.Hash byamlFileArray = byaml.GetHash();
+
+                if (byamlFileArray.ContainsKey("Actors"))
+                {
+                    Byml.Array actorList = byamlFileArray["Actors"].GetArray();
+
+                    for (int i = 0; i < actorList.Length; i++)
+                    {
+                        List<string> chestContents = GetChestContent(actorList[i]);
+
+                        if (chestContents.Count > 0)
+                        {
+                            allChestContents.Add(chestContents);
+                            Console.WriteLine(chestContents[0]);
+                        }
+                    }
+                }
+            }
+
+            allChestContents.Shuffle();
+
+            // Randomize Map Files
             foreach (string mapFile in allFiles)
             {
                 Span<byte> myByteArray = HashTable.DecompressMapData(File.ReadAllBytes(mapFile));
@@ -488,18 +519,39 @@ namespace TotkRandomizer
             File.WriteAllBytes(rstbFile, compressedRSTB);
         }
 
-        private void RandomizeCutscenes()
+        private List<string> GetChestContent(Byml actor)
         {
-            string customEventFlowFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Events");
+            List<string> returnValue = new List<string>();
 
-            string finalPath = Path.Combine(customEventFlowFolder, "..", "romfs", "Event", "EventFlow");
-            Directory.CreateDirectory(finalPath);
+            string gyamlValue = actor.GetHash()["Gyaml"].GetString();
 
-            foreach (string cutsceneFile in Directory.GetFiles(customEventFlowFolder, "*.zs"))
+            if (gyamlValue.StartsWith("TBox_"))
             {
-                finalPath = Path.Combine(customEventFlowFolder, "..", "romfs", "Event", "EventFlow", Path.GetFileName(cutsceneFile));
-                File.Copy(cutsceneFile, finalPath, true);
+                if (actor.GetHash().ContainsKey("Dynamic"))
+                {
+                    Byml.Hash dynamicArray = actor.GetHash()["Dynamic"].GetHash();
+
+                    if (dynamicArray.ContainsKey("Drop__DropActor"))
+                    {
+                        string dropValue = actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"].GetString();
+
+                        if (dropValue.Equals("KeySmall"))
+                        {
+                            return new List<string>();
+                        }
+
+                        returnValue.Add(dropValue);
+
+                        if (dynamicArray.ContainsKey("Drop__DropActor_Attachment"))
+                        {
+                            string dropValueAttachment = actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor_Attachment"].GetString();
+                            returnValue.Add(dropValueAttachment);
+                        }
+                    }
+                }
             }
+
+            return returnValue;
         }
 
         private void ProgressChanged(object sender, ProgressChangedEventArgs e)

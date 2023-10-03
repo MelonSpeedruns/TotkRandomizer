@@ -33,41 +33,5 @@
             "8430896087115556560",
             "12374186808286670327",
         };
-
-        public static Dictionary<int, string> ChestNumberList = new Dictionary<int, string>();
-
-        public static void InitChestNumberList(int chestCount)
-        {
-            ChestNumberList.Clear();
-
-            Dictionary<string, int> ChestContentsClone = new Dictionary<string, int>();
-            foreach (string key in ActorList.ChestContents.Keys)
-            {
-                ChestContentsClone.Add(key, ActorList.ChestContents[key]);
-            }
-
-            for (int i = 0; i < chestCount; i++)
-            {
-                ChestContentsClone = ChestContentsClone.Shuffle();
-
-                string newChestActor = ChestContentsClone.ElementAt(0).Key;
-
-                ChestNumberList.Add(i, newChestActor);
-                ChestContentsClone[newChestActor]--;
-
-                if (ChestContentsClone[newChestActor] <= 0)
-                {
-                    ChestContentsClone.Remove(newChestActor);
-                }
-            }
-
-            int aa = 0;
-            foreach (int a in ActorList.ChestContents.Values)
-            {
-                aa += a;
-            }
-
-            Console.WriteLine(aa);
-        }
     }
 }
