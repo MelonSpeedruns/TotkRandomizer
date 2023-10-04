@@ -34,7 +34,6 @@ namespace TotkRandomizer
             jsonEvent["Flowcharts"]["OpeningEvent"]["Events"][27]["Parameters"]["BootEventName"]["String"] = "";
 
             jsonString = JsonConvert.SerializeObject(jsonEvent, Formatting.Indented);
-            File.WriteAllText("C:\\Users\\Melon\\Bureau\\asda\\a.txt", jsonString);
             bfev = BfevFile.FromJson(jsonString);
 
             byte[] modifiedData = HashTable.CompressDataOther(bfev.ToBinary());
