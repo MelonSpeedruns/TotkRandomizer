@@ -1,9 +1,7 @@
-using BfevLibrary;
 using Cead;
 using Cead.Interop;
 using CsRestbl;
 using Native.IO.Services;
-using Ookii.Dialogs.WinForms;
 using System.ComponentModel;
 using System.Media;
 using TotkRSTB;
@@ -449,11 +447,26 @@ namespace TotkRandomizer
             {
                 string eventName = Path.GetFileNameWithoutExtension(eventFile).Split(".")[0];
 
+                string finalEventFlowPath = Path.Combine(eventFlowFolder, Path.GetFileName(eventFile));
+
+                bool editedEvent = false;
+                byte[] modifiedData = new byte[0];
+
                 if (eventName == "OpeningEvent")
                 {
-                    string finalEventFlowPath = Path.Combine(eventFlowFolder, Path.GetFileName(eventFile));
                     File.Copy(eventFile, finalEventFlowPath, true);
-                    byte[] modifiedData = TotkRandomizer.Events.EditOpeningEvent(finalEventFlowPath);
+                    modifiedData = TotkRandomizer.Events.EditOpeningEvent(finalEventFlowPath);
+                    editedEvent = true;
+                }
+                else if (eventName == "DmF_SY_SmallDungeonGoal")
+                {
+                    File.Copy(eventFile, finalEventFlowPath, true);
+                    modifiedData = TotkRandomizer.Events.EditDungeonGoalEvent(finalEventFlowPath);
+                    editedEvent = true;
+                }
+
+                if (editedEvent)
+                {
                     rstbModifiedTable.Add($"Event/EventFlow/{Path.GetFileNameWithoutExtension(eventFile).Replace(".zs", "")}", (uint)modifiedData.Length + 20000);
                 }
             }
@@ -632,20 +645,21 @@ namespace TotkRandomizer
 
         private void button2_Click(object sender, EventArgs e)
         {
-            VistaFolderBrowserDialog dialog = new VistaFolderBrowserDialog();
-            dialog.Description = "Select Tears of the Kingdom ROMFS folder...";
+            var dialog = new FolderBrowserDialog();
+            dialog.AutoUpgradeEnabled = true;
             dialog.UseDescriptionForTitle = true;
+            dialog.Description = "Select TotK RomFS folder...";
 
             // Show Folder dialog, get a path from it
-            if (dialog.ShowDialog() == DialogResult.Cancel)
-                return;
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                textBox1.Text = dialog.SelectedPath;
+                Properties.Settings.Default.totkPath = textBox1.Text;
+                Properties.Settings.Default.Save();
 
-            textBox1.Text = dialog.SelectedPath;
-            Properties.Settings.Default.totkPath = textBox1.Text;
-            Properties.Settings.Default.Save();
-
-            button1.Enabled = true;
-            button2.Enabled = true;
+                button1.Enabled = true;
+                button2.Enabled = true;
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)

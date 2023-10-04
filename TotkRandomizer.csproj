@@ -9,20 +9,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <StartupObject>TotkRandomizer.Program</StartupObject>
   </PropertyGroup>
-
+  
   <ItemGroup>
+    <PackageReference Include="BfevLibrary" Version="0.11.3" />
     <PackageReference Include="Costura.Fody" Version="5.7.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Ookii.Dialogs.WinForms" Version="4.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="ZstdSharp.Port" Version="0.7.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="BfevLibrary">
-      <HintPath>BfevLibrary.dll</HintPath>
-    </Reference>
     <Reference Include="Cead">
       <HintPath>Cead.dll</HintPath>
     </Reference>
@@ -43,9 +41,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="BfevLibrary.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Cead.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
