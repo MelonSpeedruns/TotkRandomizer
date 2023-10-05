@@ -6,15 +6,17 @@ namespace TotkRandomizer
 {
     public static class Events
     {
-        private static void PrintEventId(dynamic jsonEvent, string eventName)
+        private static int GetEventId(dynamic jsonEvent, string eventTitle, string eventName)
         {
-            foreach (dynamic a in jsonEvent["Flowcharts"]["OpeningEvent"]["Events"])
+            foreach (dynamic a in jsonEvent["Flowcharts"][eventTitle]["Events"])
             {
                 if (a["Name"] == eventName)
                 {
-                    Console.WriteLine(jsonEvent["Flowcharts"]["OpeningEvent"]["Events"].IndexOf(a));
+                    return jsonEvent["Flowcharts"][eventTitle]["Events"].IndexOf(a);
                 }
             }
+
+            return -1;
         }
 
         public static byte[] EditOpeningEvent(string filePath)
@@ -22,16 +24,19 @@ namespace TotkRandomizer
             BfevFile bfev = BfevFile.FromBinary(HashTable.DecompressDataOther(File.ReadAllBytes(filePath)));
 
             string jsonString = bfev.ToJson();
-            dynamic jsonEvent = JsonConvert.DeserializeObject(jsonString);
+            dynamic? jsonEvent = JsonConvert.DeserializeObject(jsonString);
 
-            // Change opening with Zelda walking to the waking up Ganondorf section
-            jsonEvent["Flowcharts"]["OpeningEvent"]["EntryPoints"]["IntroductionOpening"]["EventIndex"] = 83;
+            if (jsonEvent != null)
+            {
+                // Change opening with Zelda walking to the waking up Ganondorf section
+                int event75Id = GetEventId(jsonEvent, "OpeningEvent", "Event75");
+                jsonEvent["Flowcharts"]["OpeningEvent"]["EntryPoints"]["IntroductionOpening"]["EventIndex"] = event75Id;
 
-            PrintEventId(jsonEvent, "Event77");
-
-            // Remove fade-in to allow loading screen to remain black
-            jsonEvent["Flowcharts"]["OpeningEvent"]["Events"][27]["Parameters"]["IsStartOnEvent"]["Bool"] = false;
-            jsonEvent["Flowcharts"]["OpeningEvent"]["Events"][27]["Parameters"]["BootEventName"]["String"] = "";
+                // Remove fade-in to allow loading screen to remain black
+                int event77Id = GetEventId(jsonEvent, "OpeningEvent", "Event77");
+                jsonEvent["Flowcharts"]["OpeningEvent"]["Events"][event77Id]["Parameters"]["IsStartOnEvent"]["Bool"] = false;
+                jsonEvent["Flowcharts"]["OpeningEvent"]["Events"][event77Id]["Parameters"]["BootEventName"]["String"] = "";
+            }
 
             jsonString = JsonConvert.SerializeObject(jsonEvent, Formatting.Indented);
             bfev = BfevFile.FromJson(jsonString);
@@ -46,11 +51,16 @@ namespace TotkRandomizer
             BfevFile bfev = BfevFile.FromBinary(HashTable.DecompressDataOther(File.ReadAllBytes(filePath)));
 
             string jsonString = bfev.ToJson();
-            dynamic jsonEvent = JsonConvert.DeserializeObject(jsonString);
+            dynamic? jsonEvent = JsonConvert.DeserializeObject(jsonString);
 
-            // Remove giving the Light Orb to Link
-            jsonEvent["Flowcharts"]["DmF_SY_SmallDungeonGoal"]["Events"][46]["NextEventIndex"] = 10;
-            jsonEvent["Flowcharts"]["DmF_SY_SmallDungeonGoal"]["Events"][46]["NextEventName"] = "Event52";
+            if (jsonEvent != null)
+            {
+                // Remove giving the Light Orb to Link
+                int event4Id = GetEventId(jsonEvent, "DmF_SY_SmallDungeonGoal", "Event4");
+                int event52Id = GetEventId(jsonEvent, "DmF_SY_SmallDungeonGoal", "Event52");
+                jsonEvent["Flowcharts"]["DmF_SY_SmallDungeonGoal"]["Events"][event4Id]["NextEventIndex"] = event52Id;
+                jsonEvent["Flowcharts"]["DmF_SY_SmallDungeonGoal"]["Events"][event4Id]["NextEventName"] = "Event52";
+            }
 
             jsonString = JsonConvert.SerializeObject(jsonEvent, Formatting.Indented);
             bfev = BfevFile.FromJson(jsonString);

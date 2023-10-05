@@ -25,7 +25,7 @@ namespace TotkRandomizer
 
         private int currentChest = 0;
 
-        private List<List<string>> allChestContents = new List<List<string>>();
+        private List<string> allChestContents = new List<string>();
 
         private static Dictionary<string, uint> rstbModifiedTable = new Dictionary<string, uint>();
 
@@ -229,7 +229,7 @@ namespace TotkRandomizer
                             return actor;
                         }
 
-                        actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"] = allChestContents[currentChest][0];
+                        actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"] = allChestContents[currentChest];
 
                         string newDropActor = actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"].GetString();
                         if (newDropActor.StartsWith("Weapon_") && !newDropActor.Contains("_Bow_"))
@@ -247,64 +247,6 @@ namespace TotkRandomizer
 
                     currentChest++;
                 }
-            }
-
-            return actor;
-        }
-
-        private Byml ReplaceDogs(Byml actor)
-        {
-            // Replace Dogs
-            string gyamlValue = actor.GetHash()["Gyaml"].GetString();
-
-            if (gyamlValue.StartsWith("Animal_Dog_"))
-            {
-                actor.GetHash()["Gyaml"] = "Enemy_Lynel_Dark";
-
-                Byml.Hash dynamicArray = actor.GetHash()["Dynamic"].GetHash();
-
-                if (actor.GetHash().ContainsKey("Rails"))
-                {
-                    actor.GetHash().Remove("Rails");
-                }
-
-                Array values = Enum.GetValues(typeof(EnemyWeaponSet));
-                EnemyWeaponSet randomWeaponSet = (EnemyWeaponSet)values.GetValue(RNG.Next(values.Length));
-
-                switch (randomWeaponSet)
-                {
-                    case EnemyWeaponSet.LargeSwordOrSpear:
-                        TwoHandedWeaponList.Shuffle();
-                        dynamicArray.Add("EquipmentUser_Weapon", TwoHandedWeaponList[0]);
-
-                        AttachmentList.Shuffle();
-                        dynamicArray.Add("EquipmentUser_Attachment_Weapon", AttachmentList[0]);
-                        break;
-
-                    case EnemyWeaponSet.SwordAndShield:
-                        OneHandedWeaponList.Shuffle();
-                        dynamicArray.Add("EquipmentUser_Weapon", OneHandedWeaponList[0]);
-
-                        ShieldList.Shuffle();
-                        dynamicArray.Add("EquipmentUser_Shield", ShieldList[0]);
-
-                        AttachmentList.Shuffle();
-                        dynamicArray.Add("EquipmentUser_Attachment_Weapon", AttachmentList[0]);
-
-                        AttachmentList.Shuffle();
-                        dynamicArray.Add("EquipmentUser_Attachment_Shield", AttachmentList[0]);
-                        break;
-
-                    case EnemyWeaponSet.BowAndArrows:
-                        BowList.Shuffle();
-                        dynamicArray.Add("EquipmentUser_Bow", BowList[0]);
-
-                        ArrowAttachmentList.Shuffle();
-                        dynamicArray.Add("EquipmentUser_Attachment_Arrow", ArrowAttachmentList[0]);
-                        break;
-                }
-
-                return actor;
             }
 
             return actor;
@@ -486,9 +428,9 @@ namespace TotkRandomizer
 
                     for (int i = 0; i < actorList.Length; i++)
                     {
-                        List<string> chestContents = GetChestContent(actorList[i]);
+                        string chestContents = GetChestContent(actorList[i]);
 
-                        if (chestContents.Count > 0)
+                        if (chestContents != string.Empty)
                         {
                             allChestContents.Add(chestContents);
                         }
@@ -518,8 +460,6 @@ namespace TotkRandomizer
                         actorList[i] = ReplaceChest(actorList[i]);
 
                         actorList[i] = ReplaceBasics(actorList[i]);
-
-                        //actorList[i] = ReplaceDogs(actorList[i]);
                     }
                 }
 
@@ -532,8 +472,6 @@ namespace TotkRandomizer
 
                 currentProgress++;
                 backgroundWorker1.ReportProgress(currentProgress);
-
-                Console.WriteLine(currentChest);
             }
 
             //RSTB Table
@@ -590,10 +528,8 @@ namespace TotkRandomizer
             return eventNames;
         }
 
-        private List<string> GetChestContent(Byml actor)
+        private string GetChestContent(Byml actor)
         {
-            List<string> returnValue = new List<string>();
-
             string gyamlValue = actor.GetHash()["Gyaml"].GetString();
 
             if (gyamlValue.StartsWith("TBox_"))
@@ -608,21 +544,15 @@ namespace TotkRandomizer
 
                         if (dropValue.Equals("KeySmall"))
                         {
-                            return new List<string>();
+                            return string.Empty;
                         }
 
-                        returnValue.Add(dropValue);
-
-                        if (dynamicArray.ContainsKey("Drop__DropActor_Attachment"))
-                        {
-                            string dropValueAttachment = actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor_Attachment"].GetString();
-                            returnValue.Add(dropValueAttachment);
-                        }
+                        return dropValue;
                     }
                 }
             }
 
-            return returnValue;
+            return string.Empty;
         }
 
         private void ProgressChanged(object sender, ProgressChangedEventArgs e)
