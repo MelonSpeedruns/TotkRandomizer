@@ -20,11 +20,12 @@ namespace TotkRandomizer
             InitializeComponent();
         }
 
+        private const int GREAT_SKY_ISLANDS_LIGHT_ORBS_COUNT = 4;
+        private const int TOTAL_LIGHT_ORBS_COUNT = 152;
         private int currentProgress = 0;
         private static int maxProgress = 0;
 
-        private int currentChest = 0;
-
+        private List<string> allGreatSkyIslandsChestContents = new List<string>();
         private List<string> allChestContents = new List<string>();
 
         private static Dictionary<string, uint> rstbModifiedTable = new Dictionary<string, uint>();
@@ -206,7 +207,7 @@ namespace TotkRandomizer
             return actor;
         }
 
-        private Byml ReplaceChest(Byml actor)
+        private Byml ReplaceChest(Byml actor, string mapFile)
         {
             string gyamlValue = actor.GetHash()["Gyaml"].GetString();
 
@@ -229,7 +230,16 @@ namespace TotkRandomizer
                             return actor;
                         }
 
-                        actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"] = allChestContents[currentChest];
+                        if (IsSkyIslandChest(mapFile))
+                        {
+                            actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"] = allGreatSkyIslandsChestContents[0];
+                            allGreatSkyIslandsChestContents.RemoveAt(0);
+                        }
+                        else
+                        {
+                            actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"] = allChestContents[0];
+                            allChestContents.RemoveAt(0);
+                        }
 
                         string newDropActor = actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"].GetString();
                         if (newDropActor.StartsWith("Weapon_") && !newDropActor.Contains("_Bow_"))
@@ -244,8 +254,6 @@ namespace TotkRandomizer
                             actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor_Attachment"] = AttachmentList[0];
                         }
                     }
-
-                    currentChest++;
                 }
             }
 
@@ -336,8 +344,6 @@ namespace TotkRandomizer
             string minusFieldLargeDungeonPath = Path.Combine(textBox1.Text, "Banc", "MinusField", "LargeDungeon");
             string smallDungeonPath = Path.Combine(textBox1.Text, "Banc", "SmallDungeon");
 
-            currentChest = 0;
-
             string[] mapFiles = new string[] {
                 mainFieldPath,
                 largeDungeonPath,
@@ -376,6 +382,7 @@ namespace TotkRandomizer
 
             string[] allFiles = Directory.GetFiles(mapfilesPath, "*.bcett.byml.zs", SearchOption.AllDirectories);
 
+            allGreatSkyIslandsChestContents.Clear();
             allChestContents.Clear();
 
             // Create New Event Files
@@ -428,17 +435,49 @@ namespace TotkRandomizer
 
                     for (int i = 0; i < actorList.Length; i++)
                     {
-                        string chestContents = GetChestContent(actorList[i]);
+                        string chestContent = GetChestContent(actorList[i]);
 
-                        if (chestContents != string.Empty)
+                        if (chestContent != string.Empty)
                         {
-                            allChestContents.Add(chestContents);
+                            if (IsSkyIslandChest(mapFile))
+                            {
+                                allGreatSkyIslandsChestContents.Add(chestContent);
+                            }
+                            else
+                            {
+                                allChestContents.Add(chestContent);
+                            }
                         }
                     }
                 }
             }
 
+            // Add Light Orbs in Chests across the Great Sky Islands
+            for (int i = 0; i < GREAT_SKY_ISLANDS_LIGHT_ORBS_COUNT; i++)
+            {
+                string newLightOrb = allGreatSkyIslandsChestContents.Where(i => i.StartsWith("Item_")).First();
+                int index = allGreatSkyIslandsChestContents.IndexOf(newLightOrb);
+
+                if (index != -1)
+                {
+                    allGreatSkyIslandsChestContents[index] = "Obj_DungeonClearSeal";
+                }
+            }
+
+            // Add Light Orbs in Chests across Hyrule
+            for (int i = 0; i < TOTAL_LIGHT_ORBS_COUNT - GREAT_SKY_ISLANDS_LIGHT_ORBS_COUNT; i++)
+            {
+                string newLightOrb = allChestContents.Where(i => i.StartsWith("Item_")).First();
+                int index = allChestContents.IndexOf(newLightOrb);
+
+                if (index != -1)
+                {
+                    allChestContents[index] = "Obj_DungeonClearSeal";
+                }
+            }
+
             allChestContents.Shuffle();
+            allGreatSkyIslandsChestContents.Shuffle();
 
             // Randomize Map Files
             foreach (string mapFile in allFiles)
@@ -457,7 +496,7 @@ namespace TotkRandomizer
                     {
                         actorList[i] = ReplaceFloorWeapon(actorList[i]);
                         actorList[i] = ReplaceEnemy(actorList[i]);
-                        actorList[i] = ReplaceChest(actorList[i]);
+                        actorList[i] = ReplaceChest(actorList[i], mapFile);
 
                         actorList[i] = ReplaceBasics(actorList[i]);
                     }
@@ -484,6 +523,12 @@ namespace TotkRandomizer
 
             byte[] compressedRSTB = HashTable.CompressDataOther(rstbFileData.ToBinary().ToArray());
             File.WriteAllBytes(rstbFile, compressedRSTB);
+        }
+
+        private bool IsSkyIslandChest(string mapFile)
+        {
+            string mapFileName = Path.GetFileNameWithoutExtension(mapFile);
+            return mapFileName.StartsWith("StartIsland") || mapFileName.StartsWith("Dungeon060") || mapFileName.StartsWith("Dungeon061") || mapFileName.StartsWith("Dungeon062") || mapFileName.StartsWith("Dungeon063");
         }
 
         private List<string> CreateLatestEventNames(string[] allEventFiles)
