@@ -25,6 +25,8 @@ namespace TotkRandomizer
         private int currentProgress = 0;
         private static int maxProgress = 0;
 
+        private List<string> SpoilerLog = new List<string>();
+
         private Dictionary<ulong, string> allGreatSkyIslandsChestContents = new Dictionary<ulong, string>();
         private List<string> allChestContents = new List<string>();
 
@@ -242,6 +244,9 @@ namespace TotkRandomizer
                         }
 
                         string newDropActor = actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"].GetString();
+
+                        SpoilerLog.Add("0x" + hashValue.ToString("X") + " | " + newDropActor);
+
                         if (newDropActor.StartsWith("Weapon_") && !newDropActor.Contains("_Bow_"))
                         {
                             AttachmentList.Shuffle();
@@ -369,6 +374,7 @@ namespace TotkRandomizer
                 CopyFilesRecursively(mapFilePath, finalPath);
             }
 
+            SpoilerLog.Clear();
             rstbModifiedTable.Clear();
 
             string resourceFolderPath = Path.Combine(textBox1.Text, "System", "Resource");
@@ -529,6 +535,10 @@ namespace TotkRandomizer
 
             byte[] compressedRSTB = HashTable.CompressDataOther(rstbFileData.ToBinary().ToArray());
             File.WriteAllBytes(rstbFile, compressedRSTB);
+
+            // Spoiler Log
+            string logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "romfs", "spoiler_log.txt");
+            File.WriteAllLines(logPath, SpoilerLog);
         }
 
         private bool IsSkyIslandChest(string mapFile)
