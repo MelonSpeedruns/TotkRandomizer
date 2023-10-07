@@ -25,7 +25,7 @@ namespace TotkRandomizer
         private int currentProgress = 0;
         private static int maxProgress = 0;
 
-        private List<string> allGreatSkyIslandsChestContents = new List<string>();
+        private Dictionary<ulong, string> allGreatSkyIslandsChestContents = new Dictionary<ulong, string>();
         private List<string> allChestContents = new List<string>();
 
         private static Dictionary<string, uint> rstbModifiedTable = new Dictionary<string, uint>();
@@ -210,6 +210,7 @@ namespace TotkRandomizer
         private Byml ReplaceChest(Byml actor, string mapFile)
         {
             string gyamlValue = actor.GetHash()["Gyaml"].GetString();
+            ulong hashValue = actor.GetHash()["Hash"].GetUInt64();
 
             if (gyamlValue.StartsWith("TBox_"))
             {
@@ -230,10 +231,9 @@ namespace TotkRandomizer
                             return actor;
                         }
 
-                        if (IsSkyIslandChest(mapFile))
+                        if (IsSkyIslandOrbChest(hashValue))
                         {
-                            actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"] = allGreatSkyIslandsChestContents[0];
-                            allGreatSkyIslandsChestContents.RemoveAt(0);
+                            actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"] = "Obj_DungeonClearSeal";
                         }
                         else
                         {
@@ -334,6 +334,8 @@ namespace TotkRandomizer
 
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
+            RNG = new Random((int)DateTime.Now.Ticks);
+
             string largeDungeonPath = Path.Combine(textBox1.Text, "Banc", "LargeDungeon");
             string mainFieldPath = Path.Combine(textBox1.Text, "Banc", "MainField");
             string mainFieldCastlePath = Path.Combine(textBox1.Text, "Banc", "MainField", "Castle");
@@ -436,12 +438,13 @@ namespace TotkRandomizer
                     for (int i = 0; i < actorList.Length; i++)
                     {
                         string chestContent = GetChestContent(actorList[i]);
+                        ulong chestHash = GetChestHash(actorList[i]);
 
                         if (chestContent != string.Empty)
                         {
                             if (IsSkyIslandChest(mapFile))
                             {
-                                allGreatSkyIslandsChestContents.Add(chestContent);
+                                allGreatSkyIslandsChestContents.Add(chestHash, chestContent);
                             }
                             else
                             {
@@ -452,16 +455,13 @@ namespace TotkRandomizer
                 }
             }
 
+            allGreatSkyIslandsChestContents = allGreatSkyIslandsChestContents.Shuffle();
+
             // Add Light Orbs in Chests across the Great Sky Islands
             for (int i = 0; i < GREAT_SKY_ISLANDS_LIGHT_ORBS_COUNT; i++)
             {
-                string newLightOrb = allGreatSkyIslandsChestContents.Where(i => i.StartsWith("Item_")).First();
-                int index = allGreatSkyIslandsChestContents.IndexOf(newLightOrb);
-
-                if (index != -1)
-                {
-                    allGreatSkyIslandsChestContents[index] = "Obj_DungeonClearSeal";
-                }
+                KeyValuePair<ulong, string> newLightOrb = allGreatSkyIslandsChestContents.First(i => !i.Value.StartsWith("Armor_"));
+                allGreatSkyIslandsChestContents[newLightOrb.Key] = "Obj_DungeonClearSeal";
             }
 
             // Add Light Orbs in Chests across Hyrule
@@ -476,8 +476,14 @@ namespace TotkRandomizer
                 }
             }
 
+            // Remove sky islands variable separations
+            foreach (KeyValuePair<ulong, string> chest in allGreatSkyIslandsChestContents.Where(x => x.Value != "Obj_DungeonClearSeal"))
+            {
+                allChestContents.Add(chest.Value);
+                allGreatSkyIslandsChestContents.Remove(chest.Key);
+            }
+
             allChestContents.Shuffle();
-            allGreatSkyIslandsChestContents.Shuffle();
 
             // Randomize Map Files
             foreach (string mapFile in allFiles)
@@ -529,6 +535,11 @@ namespace TotkRandomizer
         {
             string mapFileName = Path.GetFileNameWithoutExtension(mapFile);
             return mapFileName.StartsWith("StartIsland") || mapFileName.StartsWith("Dungeon060") || mapFileName.StartsWith("Dungeon061") || mapFileName.StartsWith("Dungeon062") || mapFileName.StartsWith("Dungeon063");
+        }
+
+        private bool IsSkyIslandOrbChest(ulong hashValue)
+        {
+            return allGreatSkyIslandsChestContents.ContainsKey(hashValue);
         }
 
         private List<string> CreateLatestEventNames(string[] allEventFiles)
@@ -598,6 +609,11 @@ namespace TotkRandomizer
             }
 
             return string.Empty;
+        }
+
+        private ulong GetChestHash(Byml actor)
+        {
+            return actor.GetHash()["Hash"].GetUInt64();
         }
 
         private void ProgressChanged(object sender, ProgressChangedEventArgs e)

@@ -19,8 +19,7 @@
 
         public static Dictionary<TKey, TValue> Shuffle<TKey, TValue>(this Dictionary<TKey, TValue> source)
         {
-            Random r = new Random();
-            return source.OrderBy(x => r.Next()).ToDictionary(item => item.Key, item => item.Value);
+            return source.OrderBy(x => RNG.Next()).ToDictionary(item => item.Key, item => item.Value);
         }
 
         public static List<string> WaterLifeList = new List<string>()
