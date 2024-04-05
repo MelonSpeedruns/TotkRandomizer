@@ -466,14 +466,14 @@ namespace TotkRandomizer
             // Add Light Orbs in Chests across the Great Sky Islands
             for (int i = 0; i < GREAT_SKY_ISLANDS_LIGHT_ORBS_COUNT; i++)
             {
-                KeyValuePair<ulong, string> newLightOrb = allGreatSkyIslandsChestContents.First(i => !i.Value.StartsWith("Armor_"));
+                KeyValuePair<ulong, string> newLightOrb = allGreatSkyIslandsChestContents.First(i => !i.Value.StartsWith("Armor_") && !i.Value.Equals("Obj_DungeonClearSeal"));
                 allGreatSkyIslandsChestContents[newLightOrb.Key] = "Obj_DungeonClearSeal";
             }
 
             // Add Light Orbs in Chests across Hyrule
             for (int i = 0; i < TOTAL_LIGHT_ORBS_COUNT - GREAT_SKY_ISLANDS_LIGHT_ORBS_COUNT; i++)
             {
-                string newLightOrb = allChestContents.Where(i => i.StartsWith("Item_")).First();
+                string newLightOrb = allChestContents.Where(i => i.StartsWith("Item_") && !i.Equals("Obj_DungeonClearSeal")).First();
                 int index = allChestContents.IndexOf(newLightOrb);
 
                 if (index != -1)
