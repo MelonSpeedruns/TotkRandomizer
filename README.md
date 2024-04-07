@@ -19,7 +19,7 @@ Head over to the [Actions](https://github.com/MelonSpeedruns/TotkRandomizer/acti
 
 The randomizer works on a real Nintendo Switch console, Ryujinx and Yuzu.
 
-If the app doesn't launch for you when double clicking it, then you might be missing the latest [.NET Desktop Runtime 7.0](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-7.0.8-windows-x64-installer)
+If the app doesn't launch for you when double clicking it, then you might be missing the latest [.NET Desktop Runtime 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/thank-you/runtime-desktop-8.0.3-windows-x64-installer)
 
 ## What's randomized
 
