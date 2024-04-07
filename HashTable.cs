@@ -1,6 +1,5 @@
-﻿using ZstdSharp;
-using Cead;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using SarcLibrary;
+using ZstdSharp;
 
 namespace TotkRSTB
 {
@@ -16,7 +15,7 @@ namespace TotkRSTB
         public static Decompressor _mapDecompressor = new();
         public static Compressor _mapCompressor = new(16);
 
-        private static Sarc sarcFiles;
+        private static Sarc sarcFile;
 
         private static Dictionary<uint, string> _hashStringList { get; } = new();
         private static Dictionary<string, uint> _stringHashList { get; } = new();
@@ -27,15 +26,15 @@ namespace TotkRSTB
         public static void InitHashTable(string dicPath)
         {
             Span<byte> data = _commonDecompressor.Unwrap(File.ReadAllBytes(dicPath));
-            sarcFiles = Sarc.FromBinary(data.ToArray());
+            sarcFile = Sarc.FromBinary(data.ToArray());
 
-            _commonDecompressor.LoadDictionary(sarcFiles["pack.zsdic"]);
-            _commonCompressor.LoadDictionary(sarcFiles["pack.zsdic"]);
+            _commonDecompressor.LoadDictionary(sarcFile["pack.zsdic"]);
+            _commonCompressor.LoadDictionary(sarcFile["pack.zsdic"]);
 
-            _commonDecompressorOther.LoadDictionary(sarcFiles["zs.zsdic"]);
+            _commonDecompressorOther.LoadDictionary(sarcFile["zs.zsdic"]);
 
-            _mapDecompressor.LoadDictionary(sarcFiles["bcett.byml.zsdic"]);
-            _mapCompressor.LoadDictionary(sarcFiles["bcett.byml.zsdic"]);
+            _mapDecompressor.LoadDictionary(sarcFile["bcett.byml.zsdic"]);
+            _mapCompressor.LoadDictionary(sarcFile["bcett.byml.zsdic"]);
         }
 
         public static byte[] DecompressFile(byte[] data)

@@ -1,7 +1,8 @@
-using Cead;
-using Cead.Interop;
-using CsRestbl;
-using Native.IO.Services;
+using BymlLibrary;
+using BymlLibrary.Nodes.Containers;
+using Revrs;
+using RstbLibrary;
+using RstbLibrary.Helpers;
 using System.ComponentModel;
 using System.Media;
 using TotkRSTB;
@@ -13,10 +14,7 @@ namespace TotkRandomizer
     {
         public Form1()
         {
-            DllManager.LoadCead();
-
-            NativeLibraryManager.RegisterAssembly(typeof(Application).Assembly, out bool isCommonLoaded).Register(new RestblLibrary(), out bool isRestblLoaded);
-
+            Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
             InitializeComponent();
         }
 
@@ -67,11 +65,11 @@ namespace TotkRandomizer
         private Byml ReplaceEnemy(Byml actor)
         {
             // Replace Enemy
-            string gyamlValue = actor.GetHash()["Gyaml"].GetString();
+            string gyamlValue = actor.GetMap()["Gyaml"].GetString();
 
-            if (actor.GetHash().ContainsKey("Dynamic"))
+            if (actor.GetMap().ContainsKey("Dynamic"))
             {
-                Byml.Hash dynamicArray = actor.GetHash()["Dynamic"].GetHash();
+                BymlMap dynamicArray = actor.GetMap()["Dynamic"].GetMap();
 
                 foreach (KeyValuePair<List<string>, List<List<string>>> enemyDictList in EnemyReplaceList)
                 {
@@ -81,11 +79,11 @@ namespace TotkRandomizer
                         {
                             List<string> enemyTypeList = enemyDictList.Value[RNG.Next(enemyDictList.Value.Count)];
                             string newEnemyName = enemyTypeList[RNG.Next(enemyTypeList.Count)];
-                            actor.GetHash()["Gyaml"] = newEnemyName;
+                            actor.GetMap()["Gyaml"] = newEnemyName;
 
-                            if (actor.GetHash().ContainsKey("Rails"))
+                            if (actor.GetMap().ContainsKey("Rails"))
                             {
-                                actor.GetHash().Remove("Rails");
+                                actor.GetMap().Remove("Rails");
                             }
 
                             // Remove Existing Weapons & Attachments
@@ -211,23 +209,23 @@ namespace TotkRandomizer
 
         private Byml ReplaceChest(Byml actor, string mapFile)
         {
-            string gyamlValue = actor.GetHash()["Gyaml"].GetString();
-            ulong hashValue = actor.GetHash()["Hash"].GetUInt64();
+            string gyamlValue = actor.GetMap()["Gyaml"].GetString();
+            ulong hashValue = actor.GetMap()["Hash"].GetUInt64();
 
             if (gyamlValue.StartsWith("TBox_"))
             {
-                if (actor.GetHash().ContainsKey("Dynamic"))
+                if (actor.GetMap().ContainsKey("Dynamic"))
                 {
-                    Byml.Hash dynamicArray = actor.GetHash()["Dynamic"].GetHash();
+                    BymlMap dynamicArray = actor.GetMap()["Dynamic"].GetMap();
 
                     if (dynamicArray.ContainsKey("Drop__DropActor_Attachment"))
                     {
-                        actor.GetHash()["Dynamic"].GetHash().Remove("Drop__DropActor_Attachment");
+                        actor.GetMap()["Dynamic"].GetMap().Remove("Drop__DropActor_Attachment");
                     }
 
                     if (dynamicArray.ContainsKey("Drop__DropActor"))
                     {
-                        string dropValue = actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"].GetString();
+                        string dropValue = actor.GetMap()["Dynamic"].GetMap()["Drop__DropActor"].GetString();
                         if (dropValue.Equals("KeySmall"))
                         {
                             return actor;
@@ -235,15 +233,15 @@ namespace TotkRandomizer
 
                         if (IsSkyIslandOrbChest(hashValue))
                         {
-                            actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"] = "Obj_DungeonClearSeal";
+                            actor.GetMap()["Dynamic"].GetMap()["Drop__DropActor"] = "Obj_DungeonClearSeal";
                         }
                         else
                         {
-                            actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"] = allChestContents[0];
+                            actor.GetMap()["Dynamic"].GetMap()["Drop__DropActor"] = allChestContents[0];
                             allChestContents.RemoveAt(0);
                         }
 
-                        string newDropActor = actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"].GetString();
+                        string newDropActor = actor.GetMap()["Dynamic"].GetMap()["Drop__DropActor"].GetString();
 
                         SpoilerLog.Add("0x" + hashValue.ToString("X") + " | " + newDropActor);
 
@@ -253,10 +251,10 @@ namespace TotkRandomizer
 
                             if (!dynamicArray.ContainsKey("Drop__DropActor_Attachment"))
                             {
-                                actor.GetHash()["Dynamic"].GetHash().Add("Drop__DropActor_Attachment", AttachmentList[0]);
+                                actor.GetMap()["Dynamic"].GetMap().Add("Drop__DropActor_Attachment", AttachmentList[0]);
                             }
 
-                            actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor_Attachment"] = AttachmentList[0];
+                            actor.GetMap()["Dynamic"].GetMap()["Drop__DropActor_Attachment"] = AttachmentList[0];
                         }
                     }
                 }
@@ -268,7 +266,7 @@ namespace TotkRandomizer
         private Byml ReplaceBasics(Byml actor)
         {
             // Replace Basic Objects
-            string gyamlValue = actor.GetHash()["Gyaml"].GetString();
+            string gyamlValue = actor.GetMap()["Gyaml"].GetString();
 
             foreach (List<string> basicObjectList in BasicObjectsReplaceList)
             {
@@ -277,7 +275,7 @@ namespace TotkRandomizer
                     if (gyamlValue.Equals(basicObject))
                     {
                         basicObjectList.Shuffle();
-                        actor.GetHash()["Gyaml"] = basicObjectList[0];
+                        actor.GetMap()["Gyaml"] = basicObjectList[0];
 
                         return actor;
                     }
@@ -290,35 +288,35 @@ namespace TotkRandomizer
         private Byml ReplaceFloorWeapon(Byml actor)
         {
             // Replace Floor Weapon
-            string gyamlValue = actor.GetHash()["Gyaml"].GetString();
+            string gyamlValue = actor.GetMap()["Gyaml"].GetString();
 
             if (gyamlValue.StartsWith("Weapon_"))
             {
                 if (gyamlValue.Contains("_Shield_"))
                 {
                     ShieldList.Shuffle();
-                    actor.GetHash()["Gyaml"] = ShieldList[0];
+                    actor.GetMap()["Gyaml"] = ShieldList[0];
                 }
                 else if (gyamlValue.Contains("_Bow_"))
                 {
                     BowList.Shuffle();
-                    actor.GetHash()["Gyaml"] = BowList[0];
+                    actor.GetMap()["Gyaml"] = BowList[0];
                 }
                 else if (gyamlValue.Equals("Weapon_Sword_071_Broken"))
                 {
                     SharpWeaponList.Shuffle();
-                    actor.GetHash()["Gyaml"] = SharpWeaponList[0];
+                    actor.GetMap()["Gyaml"] = SharpWeaponList[0];
                     return actor;
                 }
                 else
                 {
                     WeaponList.Shuffle();
-                    actor.GetHash()["Gyaml"] = WeaponList[0];
+                    actor.GetMap()["Gyaml"] = WeaponList[0];
                 }
 
-                if (actor.GetHash().ContainsKey("Dynamic"))
+                if (actor.GetMap().ContainsKey("Dynamic"))
                 {
-                    Byml.Hash dynamicArray = actor.GetHash()["Dynamic"].GetHash();
+                    BymlMap dynamicArray = actor.GetMap()["Dynamic"].GetMap();
 
                     if (!gyamlValue.Contains("_Bow_"))
                     {
@@ -326,10 +324,10 @@ namespace TotkRandomizer
 
                         if (!dynamicArray.ContainsKey("Equipment_Attachment"))
                         {
-                            actor.GetHash()["Dynamic"].GetHash().Add("Equipment_Attachment", AttachmentList[0]);
+                            actor.GetMap()["Dynamic"].GetMap().Add("Equipment_Attachment", AttachmentList[0]);
                         }
 
-                        actor.GetHash()["Dynamic"].GetHash()["Equipment_Attachment"] = AttachmentList[0];
+                        actor.GetMap()["Dynamic"].GetMap()["Equipment_Attachment"] = AttachmentList[0];
                     }
                 }
             }
@@ -428,20 +426,118 @@ namespace TotkRandomizer
                 }
             }
 
+            // Create New Default Save Data
+            string gameDataListFileName = "";
+
+            foreach (string file in Directory.GetFiles(Path.Combine(textBox1.Text, "GameData")))
+            {
+                if (Path.GetExtension(file) == ".zs")
+                {
+                    gameDataListFileName = Path.GetFileName(file);
+                    break;
+                }
+            }
+
+            string saveFilePath = Path.Combine(textBox1.Text, "GameData", gameDataListFileName);
+
+            Span<byte> saveFileByteArray = HashTable.DecompressDataOther(File.ReadAllBytes(saveFilePath));
+            Byml saveByaml = Byml.FromBinary(saveFileByteArray);
+            BymlArray boolList = saveByaml.GetMap()["Data"].GetMap()["Bool"].GetArray();
+
+            for (int i = 0; i < boolList.Count; i++)
+            {
+                uint saveHash = boolList[i].GetMap()["Hash"].GetUInt32();
+
+                foreach (string hashString in SaveBoolList.SaveBoolsToChange)
+                {
+                    uint stringHash = MurMurHash3.Hash(hashString);
+
+                    if (stringHash == saveHash)
+                    {
+                        boolList[i].GetMap()["DefaultValue"] = true;
+                        break;
+                    }
+                }
+            }
+
+            BymlArray string64ArrayList = saveByaml.GetMap()["Data"].GetMap()["String64Array"].GetArray();
+            for (int i = 0; i < string64ArrayList.Count; i++)
+            {
+                uint saveHash = string64ArrayList[i].GetMap()["Hash"].GetUInt32();
+
+                if (saveHash == 0x22c6530a)
+                {
+                    string64ArrayList[i].GetMap()["DefaultValue"].GetArray()[0] = "Obj_DRStone_Get";
+                    string64ArrayList[i].GetMap()["DefaultValue"].GetArray()[1] = "Obj_Camera";
+                    string64ArrayList[i].GetMap()["DefaultValue"].GetArray()[2] = "Obj_Battery_Get";
+                    string64ArrayList[i].GetMap()["DefaultValue"].GetArray()[3] = "Parasail";
+                }
+                else if (saveHash == 0x12560253)
+                {
+                    string64ArrayList[i].GetMap()["DefaultValue"].GetArray()[0] = "Obj_UltraHand";
+                    string64ArrayList[i].GetMap()["DefaultValue"].GetArray()[1] = "Obj_OneTouchBond";
+                    string64ArrayList[i].GetMap()["DefaultValue"].GetArray()[2] = "Obj_Tooreroof";
+                    string64ArrayList[i].GetMap()["DefaultValue"].GetArray()[3] = "Obj_ReverseRecorder";
+                    string64ArrayList[i].GetMap()["DefaultValue"].GetArray()[4] = "Obj_AutoBuilder";
+                }
+            }
+
+            BymlArray boolArrayList = saveByaml.GetMap()["Data"].GetMap()["BoolArray"].GetArray();
+            for (int i = 0; i < boolArrayList.Count; i++)
+            {
+                uint saveHash = boolArrayList[i].GetMap()["Hash"].GetUInt32();
+
+                if (saveHash == 0x81cbc834)
+                {
+                    boolArrayList[i].GetMap()["DefaultValue"].GetArray()[0] = true;
+                    boolArrayList[i].GetMap()["DefaultValue"].GetArray()[1] = true;
+                }
+            }
+
+            BymlArray enumList = saveByaml.GetMap()["Data"].GetMap()["Enum"].GetArray();
+            for (int i = 0; i < enumList.Count; i++)
+            {
+                uint saveHash = enumList[i].GetMap()["Hash"].GetUInt32();
+
+                if (saveHash == 0x3ee80d28)
+                {
+                    enumList[i].GetMap()["DefaultValue"] = 0x311bb18f;
+                }
+            }
+
+            BymlArray intArrayList = saveByaml.GetMap()["Data"].GetMap()["IntArray"].GetArray();
+            for (int i = 0; i < intArrayList.Count; i++)
+            {
+                uint saveHash = intArrayList[i].GetMap()["Hash"].GetUInt32();
+
+                if (saveHash == 0x5a12a611)
+                {
+                    intArrayList[i].GetMap()["DefaultValue"].GetArray()[0] = 5;
+                }
+            }
+
+            using MemoryStream ms = new();
+            byte[] saveArray = saveByaml.ToBinary(Endianness.Little);
+
+            string gameDataNewPath = Path.Combine(randomizerPath, "GameData", gameDataListFileName);
+            Directory.CreateDirectory(Path.Combine(randomizerPath, "GameData"));
+            File.WriteAllBytes(gameDataNewPath, HashTable.CompressDataOther(saveArray));
+
             // Get Item Table from Map Files
             foreach (string mapFile in allFiles)
             {
                 Span<byte> myByteArray = HashTable.DecompressMapData(File.ReadAllBytes(mapFile));
+
                 Byml byaml = Byml.FromBinary(myByteArray);
 
                 // For every object in the map, randomize it!
-                Byml.Hash byamlFileArray = byaml.GetHash();
+                BymlMap byamlFileArray = byaml.GetMap();
 
                 if (byamlFileArray.ContainsKey("Actors"))
                 {
-                    Byml.Array actorList = byamlFileArray["Actors"].GetArray();
+                    BymlArray actorList = byamlFileArray["Actors"].GetArray();
 
-                    for (int i = 0; i < actorList.Length; i++)
+                    for (int i = 0; i < actorList.Count; i++)
                     {
                         string chestContent = GetChestContent(actorList[i]);
                         ulong chestHash = GetChestHash(actorList[i]);
@@ -473,7 +569,7 @@ namespace TotkRandomizer
             // Add Light Orbs in Chests across Hyrule
             for (int i = 0; i < TOTAL_LIGHT_ORBS_COUNT - GREAT_SKY_ISLANDS_LIGHT_ORBS_COUNT; i++)
             {
-                string newLightOrb = allChestContents.Where(i => i.StartsWith("Item_") && !i.Equals("Obj_DungeonClearSeal")).First();
+                string newLightOrb = allChestContents.First(i => i.StartsWith("Item_"));
                 int index = allChestContents.IndexOf(newLightOrb);
 
                 if (index != -1)
@@ -498,13 +594,13 @@ namespace TotkRandomizer
                 Byml byaml = Byml.FromBinary(myByteArray);
 
                 // For every object in the map, randomize it!
-                Byml.Hash byamlFileArray = byaml.GetHash();
+                BymlMap byamlFileArray = byaml.GetMap();
 
                 if (byamlFileArray.ContainsKey("Actors"))
                 {
-                    Byml.Array actorList = byamlFileArray["Actors"].GetArray();
+                    BymlArray actorList = byamlFileArray["Actors"].GetArray();
 
-                    for (int i = 0; i < actorList.Length; i++)
+                    for (int i = 0; i < actorList.Count; i++)
                     {
                         actorList[i] = ReplaceFloorWeapon(actorList[i]);
                         actorList[i] = ReplaceEnemy(actorList[i]);
@@ -514,23 +610,23 @@ namespace TotkRandomizer
                     }
                 }
 
-                byte[] fs1Array = byaml.ToBinary(false, 7).ToArray();
+                saveArray = byaml.ToBinary(Endianness.Little);
 
                 string rstbPath = Path.GetDirectoryName(mapFile).Replace(randomizerPath, "").Replace("romfs\\", "").Replace("\\", "/")[1..] + "/" + Path.GetFileNameWithoutExtension(mapFile);
-                rstbModifiedTable.Add(rstbPath, (uint)(fs1Array.Length + 20000));
+                rstbModifiedTable.Add(rstbPath, (uint)(saveArray.Length + 20000));
 
-                File.WriteAllBytes(mapFile, HashTable.CompressMapData(fs1Array));
+                File.WriteAllBytes(mapFile, HashTable.CompressMapData(saveArray));
 
                 currentProgress++;
                 backgroundWorker1.ReportProgress(currentProgress);
             }
 
             //RSTB Table
-            Restbl rstbFileData = Restbl.FromBinary(HashTable.DecompressFile(File.ReadAllBytes(rstbFile)));
+            Rstb rstbFileData = Rstb.FromBinary(HashTable.DecompressFile(File.ReadAllBytes(rstbFile)));
 
             for (int i = 0; i < rstbModifiedTable.Keys.Count; i++)
             {
-                rstbFileData.NameTable[rstbModifiedTable.Keys.ElementAt(i)] = rstbModifiedTable.Values.ElementAt(i);
+                rstbFileData.OverflowTable[rstbModifiedTable.Keys.ElementAt(i)] = rstbModifiedTable.Values.ElementAt(i);
             }
 
             byte[] compressedRSTB = HashTable.CompressDataOther(rstbFileData.ToBinary().ToArray());
@@ -596,17 +692,17 @@ namespace TotkRandomizer
 
         private string GetChestContent(Byml actor)
         {
-            string gyamlValue = actor.GetHash()["Gyaml"].GetString();
+            string gyamlValue = actor.GetMap()["Gyaml"].GetString();
 
             if (gyamlValue.StartsWith("TBox_"))
             {
-                if (actor.GetHash().ContainsKey("Dynamic"))
+                if (actor.GetMap().ContainsKey("Dynamic"))
                 {
-                    Byml.Hash dynamicArray = actor.GetHash()["Dynamic"].GetHash();
+                    BymlMap dynamicArray = actor.GetMap()["Dynamic"].GetMap();
 
                     if (dynamicArray.ContainsKey("Drop__DropActor"))
                     {
-                        string dropValue = actor.GetHash()["Dynamic"].GetHash()["Drop__DropActor"].GetString();
+                        string dropValue = actor.GetMap()["Dynamic"].GetMap()["Drop__DropActor"].GetString();
 
                         if (dropValue.Equals("KeySmall"))
                         {
@@ -623,7 +719,7 @@ namespace TotkRandomizer
 
         private ulong GetChestHash(Byml actor)
         {
-            return actor.GetHash()["Hash"].GetUInt64();
+            return actor.GetMap()["Hash"].GetUInt64();
         }
 
         private void ProgressChanged(object sender, ProgressChangedEventArgs e)

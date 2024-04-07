@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
@@ -11,25 +11,18 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="BfevLibrary" Version="0.11.3" />
+    <PackageReference Include="BfevLibrary" Version="0.11.7" />
+    <PackageReference Include="BymlLibrary" Version="2.1.8" />
     <PackageReference Include="Costura.Fody" Version="5.7.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="ZstdSharp.Port" Version="0.7.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Cead">
-      <HintPath>Cead.dll</HintPath>
-    </Reference>
-    <Reference Include="CsRestbl">
-      <HintPath>CsRestbl.dll</HintPath>
-    </Reference>
-    <Reference Include="Native.IO">
-      <HintPath>Native.IO.dll</HintPath>
-    </Reference>
+    <PackageReference Include="RstbLibrary" Version="1.0.2" />
+    <PackageReference Include="SarcLibrary" Version="3.1.2" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+    <PackageReference Include="ZstdSharp.Port" Version="0.7.6" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,15 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Cead.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="CsRestbl.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-	    <None Update="Native.IO.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
