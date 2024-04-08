@@ -8,7 +8,12 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <StartupObject>TotkRandomizer.Program</StartupObject>
+    <ApplicationIcon>rando_icon.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="rando_icon.ico" />
+  </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="BfevLibrary" Version="0.11.7" />

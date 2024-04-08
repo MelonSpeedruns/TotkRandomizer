@@ -28,20 +28,27 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             button1 = new Button();
             progressBar1 = new ProgressBar();
             backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             textBox1 = new TextBox();
             label1 = new Label();
             button2 = new Button();
+            randomizeEnemies = new CheckBox();
+            randomizeWeapons = new CheckBox();
+            randomizeNature = new CheckBox();
+            randomizeParagliderFabric = new CheckBox();
+            randomizeChests = new CheckBox();
+            test = new CheckBox();
             SuspendLayout();
             // 
             // button1
             // 
             button1.Enabled = false;
-            button1.Location = new Point(12, 74);
+            button1.Location = new Point(12, 149);
             button1.Name = "button1";
-            button1.Size = new Size(588, 61);
+            button1.Size = new Size(588, 64);
             button1.TabIndex = 0;
             button1.Text = "Randomize Game!";
             button1.UseVisualStyleBackColor = true;
@@ -89,17 +96,98 @@
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
             // 
+            // randomizeEnemies
+            // 
+            randomizeEnemies.AutoSize = true;
+            randomizeEnemies.Checked = true;
+            randomizeEnemies.CheckState = CheckState.Checked;
+            randomizeEnemies.Location = new Point(12, 74);
+            randomizeEnemies.Name = "randomizeEnemies";
+            randomizeEnemies.Size = new Size(132, 19);
+            randomizeEnemies.TabIndex = 6;
+            randomizeEnemies.Text = "Randomize Enemies";
+            randomizeEnemies.UseVisualStyleBackColor = true;
+            // 
+            // randomizeWeapons
+            // 
+            randomizeWeapons.AutoSize = true;
+            randomizeWeapons.Checked = true;
+            randomizeWeapons.CheckState = CheckState.Checked;
+            randomizeWeapons.Location = new Point(12, 99);
+            randomizeWeapons.Name = "randomizeWeapons";
+            randomizeWeapons.Size = new Size(137, 19);
+            randomizeWeapons.TabIndex = 7;
+            randomizeWeapons.Text = "Randomize Weapons";
+            randomizeWeapons.UseVisualStyleBackColor = true;
+            // 
+            // randomizeNature
+            // 
+            randomizeNature.AutoSize = true;
+            randomizeNature.Checked = true;
+            randomizeNature.CheckState = CheckState.Checked;
+            randomizeNature.Location = new Point(12, 124);
+            randomizeNature.Name = "randomizeNature";
+            randomizeNature.Size = new Size(124, 19);
+            randomizeNature.TabIndex = 8;
+            randomizeNature.Text = "Randomize Nature";
+            randomizeNature.UseVisualStyleBackColor = true;
+            // 
+            // randomizeParagliderFabric
+            // 
+            randomizeParagliderFabric.AutoSize = true;
+            randomizeParagliderFabric.Checked = true;
+            randomizeParagliderFabric.CheckState = CheckState.Checked;
+            randomizeParagliderFabric.Location = new Point(424, 99);
+            randomizeParagliderFabric.Name = "randomizeParagliderFabric";
+            randomizeParagliderFabric.RightToLeft = RightToLeft.Yes;
+            randomizeParagliderFabric.Size = new Size(176, 19);
+            randomizeParagliderFabric.TabIndex = 9;
+            randomizeParagliderFabric.Text = "Randomize Paraglider Fabric";
+            randomizeParagliderFabric.UseVisualStyleBackColor = true;
+            // 
+            // randomizeChests
+            // 
+            randomizeChests.AutoSize = true;
+            randomizeChests.Checked = true;
+            randomizeChests.CheckState = CheckState.Checked;
+            randomizeChests.Location = new Point(477, 74);
+            randomizeChests.Name = "randomizeChests";
+            randomizeChests.RightToLeft = RightToLeft.Yes;
+            randomizeChests.Size = new Size(123, 19);
+            randomizeChests.TabIndex = 11;
+            randomizeChests.Text = "Randomize Chests";
+            randomizeChests.UseVisualStyleBackColor = true;
+            // 
+            // test
+            // 
+            test.AutoSize = true;
+            test.Enabled = false;
+            test.Location = new Point(559, 124);
+            test.Name = "test";
+            test.RightToLeft = RightToLeft.Yes;
+            test.Size = new Size(41, 19);
+            test.TabIndex = 12;
+            test.Text = "???";
+            test.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(612, 147);
+            ClientSize = new Size(612, 225);
+            Controls.Add(test);
+            Controls.Add(randomizeChests);
+            Controls.Add(randomizeParagliderFabric);
+            Controls.Add(randomizeNature);
+            Controls.Add(randomizeWeapons);
+            Controls.Add(randomizeEnemies);
             Controls.Add(button2);
             Controls.Add(label1);
             Controls.Add(textBox1);
             Controls.Add(progressBar1);
             Controls.Add(button1);
             FormBorderStyle = FormBorderStyle.FixedSingle;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
             Name = "Form1";
             Text = "TotK Randomizer";
@@ -116,5 +204,11 @@
         private TextBox textBox1;
         private Label label1;
         private Button button2;
+        private CheckBox randomizeEnemies;
+        private CheckBox randomizeWeapons;
+        private CheckBox randomizeNature;
+        private CheckBox randomizeParagliderFabric;
+        private CheckBox randomizeChests;
+        private CheckBox test;
     }
 }

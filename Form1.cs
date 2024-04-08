@@ -405,7 +405,7 @@ namespace TotkRandomizer
                 string finalEventFlowPath = Path.Combine(eventFlowFolder, Path.GetFileName(eventFile));
 
                 bool editedEvent = false;
-                byte[] modifiedData = new byte[0];
+                byte[] modifiedData = Array.Empty<byte>();
 
                 if (eventName == "OpeningEvent")
                 {
@@ -413,7 +413,7 @@ namespace TotkRandomizer
                     modifiedData = TotkRandomizer.Events.EditOpeningEvent(finalEventFlowPath);
                     editedEvent = true;
                 }
-                else if (eventName == "DmF_SY_SmallDungeonGoal")
+                else if (eventName == "DmF_SY_SmallDungeonGoal" && randomizeChests.Checked)
                 {
                     File.Copy(eventFile, finalEventFlowPath, true);
                     modifiedData = TotkRandomizer.Events.EditDungeonGoalEvent(finalEventFlowPath);
@@ -502,6 +502,26 @@ namespace TotkRandomizer
                 if (saveHash == 0x3ee80d28)
                 {
                     enumList[i].GetMap()["DefaultValue"] = 0x311bb18f;
+                }
+                else if (saveHash == 0x92d92e37 && randomizeChests.Checked)
+                {
+                    enumList[i].GetMap()["DefaultValue"] = 0x9610d708;
+                }
+                else if (saveHash == 0x01d063db && randomizeParagliderFabric.Checked)
+                {
+                    string randomParasailValue = enumList[i].GetMap()["RawValues"].GetArray()[RNG.Next(25)].GetString();
+                    enumList[i].GetMap()["DefaultValue"] = MurMurHash3.Hash(randomParasailValue);
+                }
+            }
+
+            BymlArray string64List = saveByaml.GetMap()["Data"].GetMap()["String64"].GetArray();
+            for (int i = 0; i < string64List.Count; i++)
+            {
+                uint saveHash = string64List[i].GetMap()["Hash"].GetUInt32();
+
+                if (saveHash == 0x1b39e32f && randomizeChests.Checked)
+                {
+                    string64List[i].GetMap()["DefaultValue"] = "TBox_Field_Iron";
                 }
             }
 
@@ -602,11 +622,25 @@ namespace TotkRandomizer
 
                     for (int i = 0; i < actorList.Count; i++)
                     {
-                        actorList[i] = ReplaceFloorWeapon(actorList[i]);
-                        actorList[i] = ReplaceEnemy(actorList[i]);
-                        actorList[i] = ReplaceChest(actorList[i], mapFile);
+                        if (randomizeWeapons.Checked)
+                        {
+                            actorList[i] = ReplaceFloorWeapon(actorList[i]);
+                        }
 
-                        actorList[i] = ReplaceBasics(actorList[i]);
+                        if (randomizeEnemies.Checked)
+                        {
+                            actorList[i] = ReplaceEnemy(actorList[i]);
+                        }
+
+                        if (randomizeChests.Checked)
+                        {
+                            actorList[i] = ReplaceChest(actorList[i], mapFile);
+                        }
+
+                        if (randomizeNature.Checked)
+                        {
+                            actorList[i] = ReplaceBasics(actorList[i]);
+                        }
                     }
                 }
 
