@@ -2,7 +2,6 @@ using BymlLibrary;
 using BymlLibrary.Nodes.Containers;
 using Revrs;
 using RstbLibrary;
-using RstbLibrary.Helpers;
 using System.ComponentModel;
 using System.Media;
 using TotkRSTB;
@@ -16,6 +15,12 @@ namespace TotkRandomizer
         {
             Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
             InitializeComponent();
+
+            enemiesBox.SelectedIndex = 1;
+            chestsBox.SelectedIndex = 1;
+            weaponsBox.SelectedIndex = 1;
+            natureBox.SelectedIndex = 1;
+            paragliderPatternBox.SelectedIndex = 0;
         }
 
         private const int GREAT_SKY_ISLANDS_LIGHT_ORBS_COUNT = 4;
@@ -41,8 +46,7 @@ namespace TotkRandomizer
             HashTable.InitHashTable(Path.Combine(textBox1.Text, "Pack", "ZsDic.pack.zs"));
 
             backgroundWorker1.RunWorkerAsync();
-            button1.Enabled = false;
-            button2.Enabled = false;
+            tabControl1.Enabled = false;
         }
 
         private static void CopyFilesRecursively(string sourcePath, string targetPath)
@@ -335,6 +339,21 @@ namespace TotkRandomizer
             return actor;
         }
 
+        public int GetControlValue(ComboBox comboBox)
+        {
+            int returnValue = -1;
+            if (comboBox.InvokeRequired)
+            {
+                comboBox.Invoke(new MethodInvoker(delegate { returnValue = comboBox.SelectedIndex; }));
+            }
+            else
+            {
+                returnValue = comboBox.SelectedIndex;
+            }
+
+            return returnValue;
+        }
+
         private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
         {
             RNG = new Random((int)DateTime.Now.Ticks);
@@ -413,7 +432,7 @@ namespace TotkRandomizer
                     modifiedData = TotkRandomizer.Events.EditOpeningEvent(finalEventFlowPath);
                     editedEvent = true;
                 }
-                else if (eventName == "DmF_SY_SmallDungeonGoal" && randomizeChests.Checked)
+                else if (eventName == "DmF_SY_SmallDungeonGoal" && GetControlValue(chestsBox) == 1)
                 {
                     File.Copy(eventFile, finalEventFlowPath, true);
                     modifiedData = TotkRandomizer.Events.EditDungeonGoalEvent(finalEventFlowPath);
@@ -503,14 +522,15 @@ namespace TotkRandomizer
                 {
                     enumList[i].GetMap()["DefaultValue"] = 0x311bb18f;
                 }
-                else if (saveHash == 0x92d92e37 && randomizeChests.Checked)
+                else if (saveHash == 0x92d92e37 && GetControlValue(chestsBox) == 1)
                 {
                     enumList[i].GetMap()["DefaultValue"] = 0x9610d708;
                 }
-                else if (saveHash == 0x01d063db && randomizeParagliderFabric.Checked)
+                else if (saveHash == 0x01d063db && GetControlValue(paragliderPatternBox) > 0)
                 {
-                    string randomParasailValue = enumList[i].GetMap()["RawValues"].GetArray()[RNG.Next(25)].GetString();
-                    enumList[i].GetMap()["DefaultValue"] = MurMurHash3.Hash(randomParasailValue);
+                    int selectedPattern = GetControlValue(paragliderPatternBox) == 1 ? RNG.Next(25) : GetControlValue(paragliderPatternBox) - 1;
+                    string parasailValue = enumList[i].GetMap()["RawValues"].GetArray()[selectedPattern].GetString();
+                    enumList[i].GetMap()["DefaultValue"] = MurMurHash3.Hash(parasailValue);
                 }
             }
 
@@ -519,7 +539,7 @@ namespace TotkRandomizer
             {
                 uint saveHash = string64List[i].GetMap()["Hash"].GetUInt32();
 
-                if (saveHash == 0x1b39e32f && randomizeChests.Checked)
+                if (saveHash == 0x1b39e32f && GetControlValue(chestsBox) == 1)
                 {
                     string64List[i].GetMap()["DefaultValue"] = "TBox_Field_Iron";
                 }
@@ -622,22 +642,22 @@ namespace TotkRandomizer
 
                     for (int i = 0; i < actorList.Count; i++)
                     {
-                        if (randomizeWeapons.Checked)
+                        if (GetControlValue(weaponsBox) == 1)
                         {
                             actorList[i] = ReplaceFloorWeapon(actorList[i]);
                         }
 
-                        if (randomizeEnemies.Checked)
+                        if (GetControlValue(enemiesBox) == 1)
                         {
                             actorList[i] = ReplaceEnemy(actorList[i]);
                         }
 
-                        if (randomizeChests.Checked)
+                        if (GetControlValue(chestsBox) == 1)
                         {
                             actorList[i] = ReplaceChest(actorList[i], mapFile);
                         }
 
-                        if (randomizeNature.Checked)
+                        if (GetControlValue(natureBox) == 1)
                         {
                             actorList[i] = ReplaceBasics(actorList[i]);
                         }
@@ -770,8 +790,7 @@ namespace TotkRandomizer
 
             Console.WriteLine("Done!");
 
-            button1.Enabled = true;
-            button2.Enabled = true;
+            tabControl1.Enabled = true;
         }
 
         private void button2_Click(object sender, EventArgs e)
