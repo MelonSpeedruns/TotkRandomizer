@@ -358,6 +358,12 @@ namespace TotkRandomizer
         {
             RNG = new Random((int)DateTime.Now.Ticks);
 
+            string romfsFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "romfs");
+            if (Directory.Exists(romfsFolder))
+            {
+                Directory.Delete(romfsFolder, true);
+            }
+
             string largeDungeonPath = Path.Combine(textBox1.Text, "Banc", "LargeDungeon");
             string mainFieldPath = Path.Combine(textBox1.Text, "Banc", "MainField");
             string mainFieldCastlePath = Path.Combine(textBox1.Text, "Banc", "MainField", "Castle");
@@ -520,7 +526,7 @@ namespace TotkRandomizer
 
                 if (saveHash == 0x3ee80d28)
                 {
-                    enumList[i].GetMap()["DefaultValue"] = 0x311bb18f;
+                    enumList[i].GetMap()["DefaultValue"] = (uint)0x311bb18f;
                 }
                 else if (saveHash == 0x92d92e37 && GetControlValue(chestsBox) == 1)
                 {
