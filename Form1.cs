@@ -569,6 +569,8 @@ namespace TotkRandomizer
             Directory.CreateDirectory(Path.Combine(randomizerPath, "GameData"));
             File.WriteAllBytes(gameDataNewPath, HashTable.CompressDataOther(saveArray));
 
+            rstbModifiedTable.Add(Path.Combine("GameData", gameDataListFileName).Replace("\\", "/"), (uint)(saveArray.Length + 20000));
+
             // Get Item Table from Map Files
             foreach (string mapFile in allFiles)
             {
