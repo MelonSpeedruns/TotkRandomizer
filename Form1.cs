@@ -534,7 +534,7 @@ namespace TotkRandomizer
                 }
                 else if (saveHash == 0x01d063db && GetControlValue(paragliderPatternBox) > 0)
                 {
-                    int selectedPattern = GetControlValue(paragliderPatternBox) == 1 ? RNG.Next(25) : GetControlValue(paragliderPatternBox) - 1;
+                    int selectedPattern = GetControlValue(paragliderPatternBox) == 0 ? RNG.Next(25) : GetControlValue(paragliderPatternBox) - 1;
                     string parasailValue = enumList[i].GetMap()["RawValues"].GetArray()[selectedPattern].GetString();
                     enumList[i].GetMap()["DefaultValue"] = MurMurHash3.Hash(parasailValue);
                 }
